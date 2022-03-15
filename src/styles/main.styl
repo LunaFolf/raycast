@@ -1,8 +1,40 @@
 @import './reset.css';
 
 body
-  overflow hidden
-  background-color lighten(black, 5%)
+  // overflow hidden
+  background-color color-darker
+  color #fafafa
+
+.container
+  max-height 100vh
+  height 100vh
   display grid
-  align-items center
-  justify-content center
+  grid-template-areas \
+    "header" \
+    "sketch" \
+    "hud"
+  grid-auto-rows auto 1fr 1fr
+
+  // .header
+  //   grid-area header
+  //   display grid
+  //   height 50px
+  //   background-color color-darker
+  //   padding 8px 16px
+  //   align-items center
+  //   border-bottom 1px solid color-darkest
+  
+  .sketch
+    grid-area sketch
+    display grid
+    justify-content center
+    canvas
+      // border 1px solid color-darkest
+      box-shadow 0 10px 10px 0 color-darkest
+
+  .hud
+    grid-area hud
+    background-color color-dark
+    border-top 1px solid color-darkest
+    display grid
+    padding 8px

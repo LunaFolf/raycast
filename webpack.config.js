@@ -1,5 +1,6 @@
-const webpack = require('webpack');
-const CopyWebpackPlugin = require('copy-webpack-plugin');
+// const webpack = require('webpack');
+const path = require('path');
+const HtmlWebpackPlugin = require('html-webpack-plugin');
 
 module.exports = {
   mode: 'development',
@@ -44,7 +45,10 @@ module.exports = {
               stylusOptions: {
                 includeCSS: true,
                 resovleURL: true,
-                compress: true
+                compress: true,
+                import: [
+                  path.resolve(__dirname, 'src/styles/variables.styl')
+                ]
               }
             }
           }
@@ -62,12 +66,10 @@ module.exports = {
     ]
   },
   plugins: [
-    new CopyWebpackPlugin({
-      patterns: [
-        { from: 'src/index.html', to: 'index.html' },
-        // { from: 'src/assets', to: 'assets' },
-        // { from: 'src/favicon.ico', to: 'favicon.ico' }
-      ]
+    new HtmlWebpackPlugin({
+      template: 'src/index.html',
+      filename: 'index.html',
+      inject: true
     })
   ]
 }
