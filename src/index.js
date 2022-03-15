@@ -1,8 +1,8 @@
-import './styles/main.styl'
+import /* webpackChunkName: "styles" */'./styles/main.styl'
 
-import p5 from 'p5';
+import p5 from /* webpackChunkName: "p5" */ 'p5';
 import Player from './classes/player.js';
-import Wall from './classes/wall.js';
+import { Wall } from /* webpackChunkName: "primatives" */ './classes/primatives';
 
 const mapScale = 0.35;
 const appScale = 0.75;
