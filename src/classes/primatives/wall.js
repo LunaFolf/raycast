@@ -24,7 +24,7 @@ class Wall {
     points.forEach((startPoint, index) => {
       const endPoint = points[index + 1] || points[0];
       let color = this.color;
-      color.forEach((c, i) => color[i] = c - index * 2);
+      color.forEach((c, i) => color[i] = c - Math.sin(index));
       this.boundaries.push(new Boundary(
         startPoint.x,
         startPoint.y,

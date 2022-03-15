@@ -2,7 +2,7 @@ import /* webpackChunkName: "styles" */'./styles/main.styl'
 
 import p5 from /* webpackChunkName: "p5" */ 'p5';
 import Player from './classes/player.js';
-import { Wall } from /* webpackChunkName: "primatives" */ './classes/primatives';
+import { Wall, Column } from /* webpackChunkName: "primatives" */ './classes/primatives';
 
 const mapScale = 0.35;
 const appScale = 0.75;
@@ -33,12 +33,14 @@ const wallColors = {
 
 let walls = [
   new Wall(0, 0, squareSceneSize, squareSceneSize, ...wallColors.blue),
+
+  new Column(400, 400, 100, 30, ...wallColors.accent),
   new Wall(80, 80, 200, 20, ...wallColors.gray),
   new Wall(80, 120, 20, 200, ...wallColors.gray),
   new Wall(280, 120, 20, 200, ...wallColors.gray),
   new Wall(280, 80, 200, 20, ...wallColors.gray),
 
-  new Wall(550, 200, 60, 60, ...wallColors.accent),
+  new Column(550, 200, 60, 30, ...wallColors.accent),
 
   new Wall(750, 0, 20, 400, ...wallColors.gray),
   new Wall(750, 500, 20, 400, ...wallColors.gray),
@@ -74,7 +76,7 @@ window.p5 = new p5(sketch => {
     sketch.background(...bgColor); // Copied from the example code, but wouldn't it make more sense to have this in the setup?
 
     // Handle player movement
-    handlePlayerMovement(sketch, player);
+    const playerMovementState = handlePlayerMovement(sketch, player, walls);
 
     const scene = player.view(walls.flatMap(wall => wall.boundaries)); // Cast rays at walls, don't like having to pass in walls every time...
 
@@ -94,9 +96,26 @@ window.p5 = new p5(sketch => {
 
       const colorWithBrightness = sketch.color(color[0] - b, color[1] - b, color[2] - b);
 
+      const viewBobConf = {
+        walk: {
+          speed: 15,
+          distance: 5
+        },
+        sprint: {
+          speed: 10,
+          distance: 10
+        }
+      }
+
+      let viewBob = 0;
+      if (playerMovementState !== "idle") {
+        const { speed, distance } = viewBobConf[playerMovementState];
+        viewBob = Math.sin(sketch.frameCount / speed) * distance
+      }
+
       sketch.fill(colorWithBrightness);
       sketch.rectMode(sketch.CENTER);
-      sketch.rect(i * w + w / 2, sceneH / 2, w + 1, h);
+      sketch.rect(i * w + w / 2, (sceneH / 2) + viewBob, w + 1, h);
     })
     sketch.pop();
 
@@ -121,25 +140,37 @@ window.p5 = new p5(sketch => {
   }
 });
 
-function handlePlayerMovement(sketch, player) {
-  // Handle left/right movement
-  if (sketch.keyIsDown(65)) {
-    player.move("left");
-  };
-  if (sketch.keyIsDown(68)) {
-    player.move("right");
-  };
+function handlePlayerMovement(sketch, player, walls) {
+  const keyToDirection = {
+    65: "left",
+    68: "right",
+    87: "forward",
+    83: "backward"
+  }
+  let moving = false;
+  const shouldSprint = sketch.keyIsDown(16) && sketch.keyIsDown(87);
 
-  // Handle forward/backward movement
-  if (sketch.keyIsDown(87)) {
-    player.move("forward", sketch.keyIsDown(16))
-  };
-
-  if (sketch.keyIsDown(83)) {
-    player.move("backward")
-  };
+  const willCollide = checkPlayerCollision(player, walls);
+  
+  Object.keys(keyToDirection).forEach(key => {
+    if (!willCollide && sketch.keyIsDown(key)) {
+      moving = true;
+      player.move(keyToDirection[key], shouldSprint);
+    }
+  })
 
   // Handle rotation
   const rotation = Math.max(-1, Math.min(1, sketch.movedX))
   player.rotate(rotation);
+
+  if (moving && shouldSprint) return "sprint";
+  if (moving) return "walk";
+  return "idle";
+}
+
+function checkPlayerCollision(player, walls) {
+  const boundaries = player.view(walls.flatMap(wall => wall.boundaries));
+  // console.log(player.radius, player.movementSpeed, player.radius + player.movementSpeed);
+  // console.log(boundaries.flatMap(boundary => boundary.distance));
+  return boundaries.some(boundary => boundary.distance <= player.radius + player.movementSpeed);
 }
